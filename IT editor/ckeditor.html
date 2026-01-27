@@ -1,0 +1,177 @@
+<!-- 
+ - nettoyer css ckeditor + js pour recup que ce que j'utilise 
+ - ajouter mes div perso 
+ -->
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Typester-like Editor - Ck editor test 2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./ckeditor5/ckeditor5.css">
+
+<style>
+/* ===== GLOBAL ===== */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #f5f5f5;
+}
+
+/* ===== LAYOUT ===== */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+}
+
+/* ===== LEFT : EDITOR ===== */
+.editor-pane {
+  padding: 50px;
+  overflow-y: auto;
+  background: #ffffff;
+}
+
+.ck.ck-toolbar {
+  border: none;
+  background: transparent;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.ck-editor__main {
+  border: none !important;
+}
+
+.ck-content {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 18px;
+  line-height: 1.75;
+  padding: 0;
+  color: #222;
+}
+
+/* Typester feel */
+.ck-content h2 {
+  font-size: 36px;
+  margin: 40px 0 20px;
+}
+.ck-content h3 {
+  font-size: 28px;
+  margin: 35px 0 16px;
+}
+.ck-content h4 {
+  font-size: 22px;
+  margin: 30px 0 14px;
+}
+.ck-content p {
+  margin: 18px 0;
+}
+.ck-content ul {
+  margin: 20px 0 20px 30px;
+}
+.ck-content blockquote {
+  border-left: 4px solid #ddd;
+  padding-left: 16px;
+  margin: 30px 0;
+  color: #666;
+  font-style: italic;
+}
+
+
+
+.ck.ck-editor__top .ck-sticky-panel .ck-sticky-panel__content.ck-sticky-panel__content_sticky {
+background-color: #FFF;
+}
+
+
+/* ===== RIGHT : HTML ===== */
+.code-pane {
+  background: #2e2e2e;
+  color: #7ee787;
+  padding: 40px;
+  overflow-y: auto;
+  font-family: monospace;
+}
+
+#html-output {
+  white-space: pre;
+  font-size: 14px;
+}
+
+
+/* ===== BLOCS COULEUR ===== */
+.divColorBlu {
+  background: #e3f2fd;
+  border-left: 5px solid #2196f3;
+  padding: 16px;
+  margin: 30px 0;
+}
+.divColorYlw {
+  background: #fff8e1;
+  border-left: 5px solid #ff9800;
+  padding: 16px;
+  margin: 30px 0;
+}
+.surlignJaune{
+  background-color:#fffce6;
+  font-weight:700;
+  color:#A58F22;
+  padding-left:5px;
+}
+.surlignBleu{
+  background-color:rgba(27,139,132,0.09);
+  font-weight:700;
+  color:#1B8B84;
+  padding-left:5px;
+}
+.exempleTextItalic{
+  font-style:italic;
+  font-weight:400;
+  color:#999999;
+  font-size: 16px;
+}
+.pBeforeUl{padding-bottom:10px !important;}
+.ulFleche li::before {
+  color:#931A67;
+  padding-right:5px !important;
+  content: "▸ ";
+}
+.ulFlecheCount {
+  counter-reset: li !important;
+}
+.ulFlecheCount li::before {
+  color:#931A67;
+  padding-right:5px !important;
+	counter-increment: li;
+  content: "▸ " counter(li) ". ";
+}
+.ulFleche li, .ulFlecheCount li {margin-top:10px; list-style: none !important}
+</style>
+</head>
+
+<body>
+<div class="layout">
+  <div class="editor-pane">
+    <div id="editor"></div>
+  </div>
+  <div class="code-pane">
+    <pre id="html-output"></pre>
+  </div>
+</div>
+<script type="importmap">
+{
+  "imports": {
+    "ckeditor5": "./ckeditor5/ckeditor5.js",
+    "ckeditor5/": "./ckeditor5/"
+  }
+}
+</script>
+<script type="module" src="./main.js"></script>
+</body>
+</html>
