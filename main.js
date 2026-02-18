@@ -20,7 +20,25 @@ import {
   RemoveFormat
 } from 'ckeditor5';
 
-const STYLE_CLASSES = ['divColorBlu','divColorYlw','pBeforeUl','exempleTextItalic','ulFleche','ulFlecheCount','surlignJaune','surlignBleu'];
+const STYLE_CLASSES = ['divColorBlu','divColorYlw','pBeforeUl','exempleTextItalic','ulFleche','ulFlecheCount','surlignJaune','surlignBleu','noteinfoInTab','blockquoteEncadreInfo'];
+const COLOR_CLASS_MAP = {
+  '#000000': 'text-noir',
+  '#115755': 'text-bleu1',
+  '#1c706c': 'text-bleu2',
+  '#1b8b84': 'text-bleu3',
+  '#e1efef': 'text-bleu4',
+  '#c65b38': 'text-cuivre1',
+  '#d16e4a': 'text-cuivre2',
+  '#db825e': 'text-cuivre3',
+  '#e79773': 'text-cuivre4',
+  '#fff3e9': 'text-cuivre5',
+  '#a58f22': 'text-jaune1',
+  '#ffee74': 'text-jaune2',
+  '#fffce6': 'text-jaune3',
+  '#88165a': 'text-violet1',
+  '#a12879': 'text-violet2'
+};
+const ALLOWED_COLORS = Object.keys(COLOR_CLASS_MAP);
 const LICENSE_KEY = 'GPL'; 
 const editorConfig = {
 	toolbar: {
@@ -31,8 +49,9 @@ const editorConfig = {
 			'bold','italic','underline','fontColor','|',
       'bulletedList','numberedList','blockQuote','|',
       'removeFormat','style'
-		],
-		shouldNotGroupWhenFull: false
+		]
+		// ,
+		// shouldNotGroupWhenFull: false
 	},
 	plugins: [
 		AutoLink,
@@ -57,10 +76,32 @@ const editorConfig = {
 	htmlSupport: { // GeneralHtmlSupport
 		allow: [
 			{name: 'p', classes: STYLE_CLASSES },
-			{name: 'span', classes: STYLE_CLASSES}
+			// { name: 'ul', classes: STYLE_CLASSES },
+			{name: 'span', classes: STYLE_CLASSES}, 
+			{name: 'span', styles: {color: true}}
 		]
 	},
 	balloonToolbar: ['bold', 'italic', '|','fontColor', '|', 'link', '|', 'bulletedList', 'numberedList'],
+	fontColor: {
+    colors: [
+      { color: '#000000', label: 'noir' },
+      { color: '#115755', label: 'bleu1' },
+      { color: '#1C706C', label: 'bleu2' },
+      { color: '#1B8B84', label: 'bleu3' },
+      { color: '#e1efef', label: 'bleu4' },
+      { color: '#C65B38', label: 'cuivre1' },
+      { color: '#D16E4A', label: 'cuivre2' },
+      { color: '#DB825E', label: 'cuivre3' },
+      { color: '#E79773', label: 'cuivre4' },
+      { color: '#fff3e9', label: 'cuivre5' },
+      { color: '#a58f22', label: 'jaune1' },
+			{ color: '#ffee74', label: 'jaune2' },
+			{ color: '#fffce6', label: 'jaune3' },
+			{ color: '#88165A', label: 'violet1' },
+			{ color: '#A12879', label: 'violet2' },
+    ],
+    columns: 5
+  },
 	heading: {
     options: [
       { model: 'paragraph', title: 'Paragraphe' },
@@ -79,7 +120,9 @@ const editorConfig = {
 			{ name: 'ulFleche', element: 'ul', classes: ['ulFleche']},
 			{ name: 'ulFlecheCount', element: 'ul', classes: ['ulFlecheCount']},
 			{ name: 'surlignJaune', element: 'span', classes: ['surlignJaune']},
-			{ name: 'surlignBleu', element: 'span', classes: ['surlignBleu']}
+			{ name: 'surlignBleu', element: 'span', classes: ['surlignBleu']}, 
+			{ name: 'Div attention', element: 'p', classes: ['noteinfoInTab']}, 
+			{ name: 'Encadré Info', element: 'p', classes: ['blockquoteEncadreInfo']}
 		]
 	},
   link: {
@@ -106,25 +149,34 @@ ClassicEditor.create(document.querySelector('#editor'), editorConfig).then(edito
   });
 
 });
-
 /* ===== HTML SERIALIZER (CLE DU SYSTEME) ===== */
 const ALLOWED_ATTRS = { a: ['href', 'target', 'rel']};
 function serializeInline(node) {
   let html = '';
   node.childNodes.forEach(child => {
-    if (child.nodeType === Node.TEXT_NODE) {html += child.textContent;} 
-    else if (child.nodeType === Node.ELEMENT_NODE) {
+		if (child.nodeType === Node.TEXT_NODE) {html += child.textContent;
+			return;
+		}
+    if (child.nodeType !== Node.ELEMENT_NODE) return;
       const tag = child.tagName.toLowerCase();
+      let attrs = '';
 		if (
 			tag === 'span' &&
 			(!child.hasAttribute('class') ||
 			!child.getAttribute('class')
-				.split(' ').some(cls => STYLE_CLASSES.includes(cls)))
+				.split(' ').some(cls => STYLE_CLASSES.includes(cls)))&&
+      !child.hasAttribute('style')
 		) {
 			html += serializeInline(child); // garde le texte, jette le span
 			return;
 		}
-      let attrs = '';
+		    if (tag === 'span' && child.hasAttribute('style')) {
+      const style = child.getAttribute('style') || '';
+      const match = style.match(/color\s*:\s*(#[0-9a-fA-F]{3,6})/i);
+      if (match) { const color = match[1].toLowerCase();
+        if (ALLOWED_COLORS.includes(color)) {
+          attrs += ` style="color:${color}"`;}
+      }}
 			// ne garder que les classes autorisées
       if (child.hasAttribute('class')) {
         const classes = child.getAttribute('class')
@@ -137,7 +189,7 @@ function serializeInline(node) {
         });
       } 
       html += `<${tag}${attrs}>${serializeInline(child)}</${tag}>`;
-    }
+    // }
   });
   return html;
 }
