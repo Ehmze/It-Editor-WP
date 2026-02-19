@@ -20,25 +20,18 @@ import {
   RemoveFormat
 } from 'ckeditor5';
 
-const STYLE_CLASSES = ['divColorBlu','divColorYlw','pBeforeUl','exempleTextItalic','ulFleche','ulFlecheCount','surlignJaune','surlignBleu','noteinfoInTab','blockquoteEncadreInfo'];
 const COLOR_CLASS_MAP = {
-  '#000000': 'text-noir',
-  '#115755': 'text-bleu1',
-  '#1c706c': 'text-bleu2',
-  '#1b8b84': 'text-bleu3',
-  '#e1efef': 'text-bleu4',
-  '#c65b38': 'text-cuivre1',
-  '#d16e4a': 'text-cuivre2',
-  '#db825e': 'text-cuivre3',
-  '#e79773': 'text-cuivre4',
-  '#fff3e9': 'text-cuivre5',
-  '#a58f22': 'text-jaune1',
-  '#ffee74': 'text-jaune2',
-  '#fffce6': 'text-jaune3',
-  '#88165a': 'text-violet1',
-  '#a12879': 'text-violet2'
+  '#1b8b84': 'text-bluSmall',
+  '#a58f22': 'text-yllwDark',
+  '#a12879': 'text-purpleSmall',
+  '#d16e4a': 'text-cuivreDark',
+  '#88165a': 'text-purplDark',
+  '#db825e': 'text-cuivreSmall',
+  '#1c706c': 'text-bluDark',
 };
+const COLOR_CLASSES = Object.values(COLOR_CLASS_MAP);
 const ALLOWED_COLORS = Object.keys(COLOR_CLASS_MAP);
+const STYLE_CLASSES = ['divColorBlu','divColorYlw','pBeforeUl','exempleTextItalic','ulFleche','ulFlecheCount','surlignJaune','surlignBleu','noteinfoInTab','blockquoteEncadreInfo',COLOR_CLASSES];
 const LICENSE_KEY = 'GPL'; 
 const editorConfig = {
 	toolbar: {
@@ -76,32 +69,24 @@ const editorConfig = {
 	htmlSupport: { // GeneralHtmlSupport
 		allow: [
 			{name: 'p', classes: STYLE_CLASSES },
-			// { name: 'ul', classes: STYLE_CLASSES },
 			{name: 'span', classes: STYLE_CLASSES}, 
-			{name: 'span', styles: {color: true}}
 		]
 	},
 	balloonToolbar: ['bold', 'italic', '|','fontColor', '|', 'link', '|', 'bulletedList', 'numberedList'],
 	fontColor: {
     colors: [
-      { color: '#000000', label: 'noir' },
-      { color: '#115755', label: 'bleu1' },
-      { color: '#1C706C', label: 'bleu2' },
-      { color: '#1B8B84', label: 'bleu3' },
-      { color: '#e1efef', label: 'bleu4' },
-      { color: '#C65B38', label: 'cuivre1' },
-      { color: '#D16E4A', label: 'cuivre2' },
-      { color: '#DB825E', label: 'cuivre3' },
-      { color: '#E79773', label: 'cuivre4' },
-      { color: '#fff3e9', label: 'cuivre5' },
-      { color: '#a58f22', label: 'jaune1' },
-			{ color: '#ffee74', label: 'jaune2' },
-			{ color: '#fffce6', label: 'jaune3' },
-			{ color: '#88165A', label: 'violet1' },
-			{ color: '#A12879', label: 'violet2' },
+      { color: '#1b8b84', label: 'Blue 1B' },
+      { color: '#a58f22', label: 'Yllw dark' },
+			{ color: '#a12879', label: 'Purple A1' },
+      { color: '#d16e4a', label: 'cuivre dark' },
+			{ color: '#88165a', label: 'Purple Dark' },
+      { color: '#db825e', label: 'cuivre small' },
+      { color: '#1c706c', label: 'blue Dark' },
     ],
-    columns: 5
-  },
+    columns: 4, 
+    documentColors: 0, // Supprime les couleurs auto
+    colorPicker: false      
+    },
 	heading: {
     options: [
       { model: 'paragraph', title: 'Paragraphe' },
@@ -149,50 +134,65 @@ ClassicEditor.create(document.querySelector('#editor'), editorConfig).then(edito
   });
 
 });
-/* ===== HTML SERIALIZER (CLE DU SYSTEME) ===== */
+
 const ALLOWED_ATTRS = { a: ['href', 'target', 'rel']};
+
+
+
+
+/* ===== HTML SERIALIZER (CLE DU SYSTEME) ===== */
 function serializeInline(node) {
   let html = '';
   node.childNodes.forEach(child => {
-		if (child.nodeType === Node.TEXT_NODE) {html += child.textContent;
-			return;
-		}
+    if (child.nodeType === Node.TEXT_NODE) {html += child.textContent;
+      return;
+    }
+
     if (child.nodeType !== Node.ELEMENT_NODE) return;
-      const tag = child.tagName.toLowerCase();
-      let attrs = '';
-		if (
-			tag === 'span' &&
-			(!child.hasAttribute('class') ||
-			!child.getAttribute('class')
-				.split(' ').some(cls => STYLE_CLASSES.includes(cls)))&&
-      !child.hasAttribute('style')
-		) {
-			html += serializeInline(child); // garde le texte, jette le span
-			return;
-		}
-		    if (tag === 'span' && child.hasAttribute('style')) {
-      const style = child.getAttribute('style') || '';
+    const tag = child.tagName.toLowerCase();
+    let attrs = '';
+    // Gestion des couleurs
+    let colorClass = null;
+
+    if (child.hasAttribute('style')) {
+      const style = child.getAttribute('style');
       const match = style.match(/color\s*:\s*(#[0-9a-fA-F]{3,6})/i);
-      if (match) { const color = match[1].toLowerCase();
-        if (ALLOWED_COLORS.includes(color)) {
-          attrs += ` style="color:${color}"`;}
-      }}
-			// ne garder que les classes autorisées
-      if (child.hasAttribute('class')) {
-        const classes = child.getAttribute('class')
-          .split(' ').filter(cls => STYLE_CLASSES.includes(cls));
-        if (classes.length) {attrs += ` class="${classes.join(' ')}"`;}
+
+      if (match) {
+        const color = match[1].toLowerCase();
+        colorClass = COLOR_CLASS_MAP[color] || null;
       }
-      if (ALLOWED_ATTRS[tag]) {
-        ALLOWED_ATTRS[tag].forEach(attr => {
-          if (child.hasAttribute(attr)) {attrs += ` ${attr}="${child.getAttribute(attr)}"`;}
-        });
-      } 
-      html += `<${tag}${attrs}>${serializeInline(child)}</${tag}>`;
-    // }
+    }
+    // Gestion des classes
+    let allowedClasses = [];
+    if (child.hasAttribute('class')) {
+      allowedClasses = child.getAttribute('class')
+        .split(' ').filter(cls => STYLE_CLASSES.includes(cls));
+    }
+    // Si couleur autorisée = on l'ajoute
+    if (colorClass && !allowedClasses.includes(colorClass)) {
+      allowedClasses.push(colorClass);
+    }
+    if (allowedClasses.length) {
+      attrs += ` class="${allowedClasses.join(' ')}"`;
+    }
+    // Liens autorisés (garde attribut pr target blank)
+    if (ALLOWED_ATTRS[tag]) {
+      ALLOWED_ATTRS[tag].forEach(attr => {
+        if (child.hasAttribute(attr)) {attrs += ` ${attr}="${child.getAttribute(attr)}"`;}
+      });
+    }
+    // Suppression spans inutiles
+    const hasOnlyTextStyle = tag === 'span' && !attrs;
+    if (hasOnlyTextStyle) {
+      html += serializeInline(child);
+      return;
+    }
+    html += `<${tag}${attrs}>${serializeInline(child)}</${tag}>`;
   });
   return html;
 }
+
 
 function serializeBlock(node, indent = 0) {
   const pad = '  '.repeat(indent);
@@ -235,5 +235,3 @@ function prettyHTML(html) {
   });
   return result.trim();
 }
-
-
