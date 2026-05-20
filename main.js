@@ -31,7 +31,7 @@ const COLOR_CLASS_MAP = {
 };
 const COLOR_CLASSES = Object.values(COLOR_CLASS_MAP);
 const ALLOWED_COLORS = Object.keys(COLOR_CLASS_MAP);
-const STYLE_CLASSES = ['divColorBlu','divColorYlw','pBeforeUl','exempleTextItalic','ulFleche','ulFlecheCount','surlignJaune','surlignBleu','noteinfoInTab','blockquoteEncadreInfo',COLOR_CLASSES];
+const STYLE_CLASSES = ['divColorBlu','divColorYlw','pBeforeUl0','exempleTextItalic','ulFleche','ulFlecheCount','surlignJaune','surlignBleu','noteinfoInTab','blockquoteEncadreInfo',COLOR_CLASSES];
 const LICENSE_KEY = 'GPL'; 
 const editorConfig = {
 	toolbar: {
@@ -100,7 +100,7 @@ const editorConfig = {
 		definitions: [
 			{ name: 'Div bleu', element: 'p', classes: ['divColorBlu']},
 			{ name: 'Div jaune', element: 'p', classes: ['divColorYlw']},
-			{ name: 'pBeforeUl', element: 'p', classes: ['pBeforeUl']},
+			{ name: 'pBeforeUl0', element: 'p', classes: ['pBeforeUl0']},
 			{ name: 'exempleTextItalic', element: 'span', classes: ['exempleTextItalic']},
 			{ name: 'ulFleche', element: 'ul', classes: ['ulFleche']},
 			{ name: 'ulFlecheCount', element: 'ul', classes: ['ulFlecheCount']},
